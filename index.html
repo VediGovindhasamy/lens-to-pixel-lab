@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Interactive 3D optics bench: see how each scene point's rays pass the lens and aperture to a pixel, with focus, F-number, focal length and depth of field.">
+<meta name="description" content="Interactive 3D optics bench: see how each scene point's rays pass the lens and aperture to a pixel, with zoom, focus, iris opening and depth of field.">
 <style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 <title>Lens to Pixel Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -99,12 +99,12 @@ ol.how b { color: var(--fg); }
     <section class="sec">
       <h2>Scene</h2>
       <div class="ctl">
-        <label for="un">Near object (F): distance from sensor</label><output id="unOut">180</output>
-        <input id="un" type="range" min="140" max="400" step="1" value="180">
+        <label for="un">Near object (F): distance from sensor</label><output id="unOut">250</output>
+        <input id="un" type="range" min="240" max="600" step="1" value="250">
       </div>
       <div class="ctl">
-        <label for="uf">Far object (T): distance from sensor</label><output id="ufOut">480</output>
-        <input id="uf" type="range" min="250" max="900" step="1" value="480">
+        <label for="uf">Far object (T): distance from sensor</label><output id="ufOut">650</output>
+        <input id="uf" type="range" min="280" max="1400" step="1" value="650">
         <small>The camera body, sensor and both objects stay fixed. Only the lens moves when you focus.</small>
       </div>
     </section>
@@ -112,19 +112,19 @@ ol.how b { color: var(--fg); }
     <section class="sec">
       <h2>Lens</h2>
       <div class="ctl">
-        <label for="f">Focal length (f)</label><output id="fOut">40</output>
-        <input id="f" type="range" min="20" max="80" step="1" value="40">
-        <small>Stronger lens = shorter f = wider field of view.</small>
+        <label for="f">Focal length (f) · zoom</label><output id="fOut">40</output>
+        <input id="f" type="range" min="20" max="60" step="1" value="40">
+        <small>Changing f is zoom. The lens slides to keep the same distance in focus: longer f → lens farther from the sensor → narrower field of view. The iris opening does not change.</small>
       </div>
       <div class="ctl">
-        <label for="n">Aperture (F-number)</label><output id="nOut">f/2</output>
-        <input id="n" type="range" min="0" max="7" step="1" value="1">
-        <small>The light arriving at the lens never changes. The iris (amber arrow) only decides how much of it continues to the sensor: opening = f ÷ N.</small>
+        <label for="d">Aperture: iris opening (D)</label><output id="dOut">20.0 · f/2.0</output>
+        <input id="d" type="range" min="2.5" max="40" step="0.5" value="20">
+        <small>Size of the hole in the iris (amber arrow). F-number = f ÷ D, so the same hole on a longer lens is a bigger F-number. The light arriving at the lens never changes; the iris only decides how much continues to the sensor.</small>
       </div>
       <div class="ctl">
-        <label for="s">Focus: lens position (lens-to-sensor distance s)</label><output id="sOut">60.0</output>
-        <input id="s" type="range" min="20" max="120" step="0.1" value="60">
-        <small>The sensor is fixed; focusing slides the lens. Focal length f stays the same (changing f is zoom).</small>
+        <label for="s">Focus: lens position (lens-to-sensor distance s)</label><output id="sOut">50.0</output>
+        <input id="s" type="range" min="40" max="80" step="0.1" value="50">
+        <small>The sensor is fixed; focusing slides the lens between s = f (focused at infinity) and s = 2f (closest focus). Focal length f stays the same.</small>
       </div>
       <div class="row">
         <button id="afNear" class="primary" type="button">Focus on near (F)</button>
@@ -147,20 +147,21 @@ ol.how b { color: var(--fg); }
       </div>
       <label class="check" for="fov"><input id="fov" type="checkbox" checked> Field of view (what the sensor can see)</label>
       <label class="check" for="spin"><input id="spin" type="checkbox"> Auto-rotate 360°</label>
-      <div class="key"><span><i style="background:#F2B14C"></i>Near object rays</span><span><i style="background:#6FB7E9"></i>Far object rays</span><span><i style="background:#95A6B6"></i>Field of view</span><span><i style="background:#E7EDF2"></i>Sharp-image point</span><span><i style="background:#F2B14C"></i>Arrow = iris opening (f ÷ N)</span><span><i style="background:#6CCB8E"></i>Green zone = depth of field</span></div>
+      <div class="key"><span><i style="background:#F2B14C"></i>Near object rays</span><span><i style="background:#6FB7E9"></i>Far object rays</span><span><i style="background:#95A6B6"></i>Field of view</span><span><i style="background:#E7EDF2"></i>Sharp-image point</span><span><i style="background:#F2B14C"></i>Arrow = iris opening D</span><span><i style="background:#6CCB8E"></i>Green zone = depth of field</span></div>
     </section>
 
     <section class="sec">
       <h2>Readouts</h2>
       <div class="readouts">
-        <div class="ro"><span>Lens position that focuses F</span><b id="rVn">60.0</b></div>
+        <div class="ro"><span>Lens position that focuses F</span><b id="rVn">50.0</b></div>
         <div class="ro"><span>Lens position that focuses T</span><b id="rVf">44.1</b></div>
         <div class="ro"><span>Near (F) on sensor</span><b id="rBn">sharp</b></div>
         <div class="ro"><span>Far (T) on sensor</span><b id="rBf">7 px blur</b></div>
-        <div class="ro"><span>Lens is now at (s)</span><b id="rS">60.0</b></div>
+        <div class="ro"><span>Lens is now at (s)</span><b id="rS">50.0</b></div>
         <div class="ro"><span>Horizontal FOV</span><b id="rF">22.6°</b></div>
         <div class="ro"><span>Opening diameter</span><b id="rD">20.0</b></div>
-        <div class="ro"><span>Light vs f/2</span><b id="rL">1.00×</b></div>
+        <div class="ro"><span>F-number (f ÷ D)</span><b id="rN">f/2.0</b></div>
+        <div class="ro"><span>Light through iris (vs D = 20)</span><b id="rL">1.00×</b></div>
         <div class="ro"><span>Sample rays through the iris</span><b id="rP">–</b></div>
         <div class="ro"><span>Scene brightness</span><b>unchanged</b></div>
       </div>
@@ -174,7 +175,7 @@ ol.how b { color: var(--fg); }
         <div class="ro"><span>Sharp from – to</span><b id="rDof">109 – 133</b></div>
         <div class="ro"><span>Zone depth</span><b id="rDofW">24</b></div>
       </div>
-      <small class="legend">Distance from the sensor (0 = sensor). Green = distances whose blur stays under 1 pixel. Close the aperture and the zone stretches; open it and the zone shrinks around the focus distance.</small>
+      <small class="legend">Distance from the sensor (0 = sensor). Green = distances whose blur stays under 1 pixel. Make the iris opening smaller and the zone stretches; make it bigger and the zone shrinks around the focus distance.</small>
     </section>
 
     <section class="sec sensorbox">
@@ -189,8 +190,9 @@ ol.how b { color: var(--fg); }
       <ol class="how">
         <li><b>Point → pixel.</b> With “one point of each object”, the warm fan (near F) and the cool fan (far T) each fill the lens, then each meets at its own point.</li>
         <li><b>Focus = moving the lens.</b> Press “Focus on near” and watch the lens slide away from the fixed sensor; “Focus on far” slides it back toward the sensor. Near objects need the lens farther out.</li>
-        <li><b>Depth of field.</b> Focus on near: the green zone sits tightly around the F, the T is outside it and blurred. Close the aperture f/2 → f/16: the green zone stretches back until it reaches the T, and the T turns sharp. The image also gets darker.</li>
-        <li><b>Open it again.</b> At f/1.4 the T blurs even more: shallow depth of field. Switch to “Focus on far” and the roles swap.</li>
+        <li><b>Depth of field.</b> Focus on near: the green zone sits tightly around the F, the T is outside it and blurred. Drag the iris opening down to 2.5 (f/16): the green zone stretches back until it reaches the T, and the T turns sharp. The image also gets darker.</li>
+        <li><b>Open it again.</b> At D = 28.5 (f/1.4) the T blurs even more: shallow depth of field. Switch to “Focus on far” and the roles swap.</li>
+        <li><b>Zoom (slide 9).</b> Move focal length 20 → 60. The lens slides away from the sensor, the field-of-view frame and the horizontal FOV shrink, the letters grow on the sensor (some leave the frame). The iris opening D stays the same; only the F-number number changes.</li>
         <li><b>Only the lens-to-sensor side changes.</b> The light arriving at the lens is identical at every F-number. The amber arrow across the iris shows the opening; rays hitting the blades stop there, so fewer rays continue to the sensor.</li>
       </ol>
     </section>
@@ -201,7 +203,6 @@ ol.how b { color: var(--fg); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 (function () {
-  var NS = [1.4, 2, 2.8, 4, 5.6, 8, 11, 16];
   var SW = 24, SHh = 18;
   /* object points as viewing angles (x/u, y/u) so both objects sit inside the field of view */
   var NEAR = { name: 'near', pts: [[-0.14, 0.12], [-0.14, 0.06], [-0.14, 0], [-0.14, -0.06], [-0.14, -0.12], [-0.09, 0.12], [-0.04, 0.12], [-0.09, 0]],
@@ -210,7 +211,7 @@ ol.how b { color: var(--fg); }
               cols: [0x6FB7E9, 0x5FD1C2, 0x6CCB8E, 0x8FA8FF, 0x4FC3F7, 0x9AD0EC, 0x7EE0B5, 0x7FA6E8, 0x5CC8D8], tip: 4 };
   var LENS_R = 30;
   var RINGS = [2.4, 5, 7, 9.5, 13, 18, 24, 30];
-  var st = { un: 180, uf: 480, f: 40, ni: 1, s: 60, rays: 'tips', fov: true, rot: false };
+  var st = { un: 250, uf: 650, f: 40, D: 20, s: 50, focusD: 250, rays: 'tips', fov: true, rot: false };
   var afTarget = null, lastPass = 0, lastTotal = 0;
   var $ = function (id) { return document.getElementById(id); };
 
@@ -227,10 +228,10 @@ ol.how b { color: var(--fg); }
   var dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(-100, 150, 120); scene.add(dl);
   var rig = new THREE.Group(); scene.add(rig);
   (function () {   /* fixed camera body: a box around the sensor, open toward the lens */
-    var b = new THREE.BoxGeometry(84, 76, 142); b.translate(0, 0, -62);
+    var b = new THREE.BoxGeometry(84, 76, 190); b.translate(0, 0, -85);
     var e = new THREE.LineSegments(new THREE.EdgesGeometry(b), new THREE.LineBasicMaterial({ color: 0x3E5266, transparent: true, opacity: 0.6 }));
     scene.add(e);
-    var bodyLabel = label('Camera body (fixed)', '#95A6B6'); bodyLabel.position.set(0, 46, 2); scene.add(bodyLabel);
+    var bodyLabel = label('Camera body (fixed)', '#95A6B6'); bodyLabel.position.set(0, -62, 2); scene.add(bodyLabel);
   })();
   var dyn = new THREE.Group(); rig.add(dyn);
 
@@ -275,7 +276,7 @@ ol.how b { color: var(--fg); }
   }
 
   function compute() {
-    var f = st.f, N = NS[st.ni], s = st.s, a = f / (2 * N);
+    var f = st.f, s = st.s, a = st.D / 2, N = f / st.D;   /* iris opening D is physical; F-number is derived */
     function obj(D) {   /* D = distance from the fixed sensor; u = distance from the lens */
       var u = D - s, inv = 1 / f - 1 / u, real = u > 0 && inv > 1e-6;
       var disc = D * D - 4 * f * D, sF = disc >= 0 ? (D - Math.sqrt(disc)) / 2 : NaN;   /* lens position that focuses it */
@@ -318,7 +319,7 @@ ol.how b { color: var(--fg); }
       ar.line.material.linewidth = 2; dyn.add(ar);
     });
     lAp.position.set(0, -(R + 12), 0);
-    setLabel(lAp, 'Opening ' + (2 * k.a).toFixed(1) + ' (f/' + k.N + ')');
+    setLabel(lAp, 'Opening ' + (2 * k.a).toFixed(1) + ' (f/' + k.N.toFixed(1) + ')');
 
     /* rays: each point sends a fixed fan toward the whole lens; the iris passes or blocks each ray */
     var pos = [], col = [], posX = [], colX = [], posF = [], colF = [];
@@ -386,11 +387,12 @@ ol.how b { color: var(--fg); }
       var ep = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]], epos = [], ecol = [];
       ep.forEach(function (e) { epos.push(v[e[0]].x, v[e[0]].y, v[e[0]].z, v[e[1]].x, v[e[1]].y, v[e[1]].z); ecol.push(0.42,0.8,0.56, 0.42,0.8,0.56); });
       dyn.add(lines(epos, ecol, 0.7));
-      lDof.visible = true; lDof.position.set(0, SHh / 2 * zf / k.s + 14, -(zn + zf) / 2);
+      lDof.visible = true; lDof.position.set(0, -Math.max(SHh / 2 * zf / k.s, 0.2 * zf) - 14, -(zn + zf) / 2);
       setLabel(lDof, 'Sharp zone ' + Math.round(zn + k.s) + ' – ' + (k.dofF >= ZMAX ? '∞' : Math.round(zf + k.s)), '#6CCB8E');
     } else { lDof.visible = false; }
     lLens.position.set(0, R + 12, 0); lSen.position.set(0, SHh / 2 + 7, k.s);
     drawPixels(k); readouts(k); drawDof(k);
+    window.__k = { f: k.f, s: k.s, D: 2 * k.a, N: k.N, hfov: 2 * Math.atan(SW / 2 / k.s) * 180 / Math.PI, nearBlurD: 2 * k.near.blurR, farBlurD: 2 * k.far.blurR, nearReal: k.near.real, farReal: k.far.real, dofN: k.dofN + k.s, dofF: k.dofF + k.s, focusD: st.focusD, front: window.__frontSegs, pass: lastPass };
     window.__dof = [k.dofN + k.s, k.dofF + k.s, k.focusU + k.s];
   }
 
@@ -460,13 +462,14 @@ ol.how b { color: var(--fg); }
   function blurText(ob) { if (!ob.real) return 'no real image'; var d = 2 * ob.blurR; return d < 1 ? 'sharp' : d.toFixed(1) + ' px blur'; }
   function readouts(k) {
     $('unOut').textContent = k.near.D.toFixed(0); $('ufOut').textContent = k.far.D.toFixed(0);
-    $('fOut').textContent = k.f.toFixed(0); $('nOut').textContent = 'f/' + k.N; $('sOut').textContent = k.s.toFixed(1);
+    $('fOut').textContent = k.f.toFixed(0); $('dOut').textContent = (2 * k.a).toFixed(1) + ' · f/' + k.N.toFixed(1); $('sOut').textContent = k.s.toFixed(1);
+    $('rN').textContent = 'f/' + k.N.toFixed(1);
     $('rVn').textContent = isNaN(k.near.sF) ? 'too close to focus' : k.near.sF.toFixed(1); $('rVf').textContent = isNaN(k.far.sF) ? 'too close to focus' : k.far.sF.toFixed(1);
     $('rBn').textContent = blurText(k.near); $('rBf').textContent = blurText(k.far);
     $('rS').textContent = k.s.toFixed(1);
     $('rF').textContent = (2 * Math.atan(SW / 2 / k.s) * 180 / Math.PI).toFixed(1) + '°';
     $('rD').textContent = (2 * k.a).toFixed(1);
-    $('rL').textContent = (Math.pow(2 / k.N, 2)).toFixed(2) + '×';
+    $('rL').textContent = Math.pow(st.D / 20, 2).toFixed(2) + '×';
     $('rP').textContent = st.rays === 'none' ? '–' : (lastPass + ' of ' + lastTotal + ' pass');
     var nS = k.near.real && 2 * k.near.blurR < 1, fS = k.far.real && 2 * k.far.blurR < 1, el = $('status');
     if (!k.near.real) { el.textContent = 'NEAR OBJECT INSIDE f: NO REAL IMAGE'; el.style.color = 'var(--warn)'; }
@@ -487,17 +490,23 @@ ol.how b { color: var(--fg); }
     else { camera.position.set(-200 - k.far.D * 0.35, 120, 140); controls.target.set(0, 0, mid * 0.55); }
     controls.update();
   }
-  function syncInputs() { $('un').value = st.un; $('uf').value = st.uf; $('f').value = st.f; $('n').value = st.ni; $('s').value = st.s; }
-  function focusOn(which) { var k = compute(), ob = k[which]; if (!isNaN(ob.sF)) afTarget = Math.max(20, Math.min(120, ob.sF)); }
+  function syncInputs() { $('un').value = st.un; $('uf').value = st.uf; $('f').value = st.f; $('d').value = st.D; $('s').value = st.s; }
+  /* distance from the sensor that is in focus for lens position s */
+  function focusDFromS(s, f) { if (s <= f + 1e-6) return Infinity; var u = 1 / (1 / f - 1 / s); return u + s; }
+  /* lens position that focuses distance D (from sensor); closer than 4f cannot be focused -> closest focus 2f */
+  function sFromFocusD(D, f) { if (!isFinite(D)) return f; var disc = D * D - 4 * f * D; return disc < 0 ? 2 * f : (D - Math.sqrt(disc)) / 2; }
+  function clampS(v) { return Math.max(st.f, Math.min(2 * st.f, v)); }   /* real lens travel: infinity (f) to closest focus (2f) */
+  function sLimits() { var e = $('s'); e.min = st.f; e.max = 2 * st.f; }
+  function focusOn(which) { var k = compute(), ob = k[which]; if (!isNaN(ob.sF)) afTarget = clampS(ob.sF); }
 
-  $('un').addEventListener('input', function (e) { st.un = +e.target.value; if (st.uf < st.un + 40) { st.uf = Math.min(900, st.un + 40); $('uf').value = st.uf; } afTarget = null; update(); });
-  $('uf').addEventListener('input', function (e) { st.uf = +e.target.value; if (st.uf < st.un + 40) { st.un = Math.max(140, st.uf - 40); $('un').value = st.un; } afTarget = null; update(); });
-  $('f').addEventListener('input', function (e) { st.f = +e.target.value; afTarget = null; update(); });
-  $('n').addEventListener('input', function (e) { st.ni = +e.target.value; update(); });
-  $('s').addEventListener('input', function (e) { st.s = +e.target.value; afTarget = null; update(); });
+  $('un').addEventListener('input', function (e) { st.un = +e.target.value; if (st.uf < st.un + 40) { st.uf = Math.min(1400, st.un + 40); $('uf').value = st.uf; } afTarget = null; update(); });
+  $('uf').addEventListener('input', function (e) { st.uf = +e.target.value; if (st.uf < st.un + 40) { st.un = Math.max(240, st.uf - 40); $('un').value = st.un; } afTarget = null; update(); });
+  $('f').addEventListener('input', function (e) { st.f = +e.target.value; afTarget = null; sLimits(); st.s = clampS(sFromFocusD(st.focusD, st.f)); $('s').value = st.s; update(); });   /* zoom keeps the same distance in focus (lens slides) */
+  $('d').addEventListener('input', function (e) { st.D = +e.target.value; update(); });
+  $('s').addEventListener('input', function (e) { st.s = clampS(+e.target.value); st.focusD = focusDFromS(st.s, st.f); afTarget = null; update(); });
   $('afNear').addEventListener('click', function () { focusOn('near'); });
   $('afFar').addEventListener('click', function () { focusOn('far'); });
-  $('reset').addEventListener('click', function () { st.un = 180; st.uf = 480; st.f = 40; st.ni = 1; st.s = 60; st.rays = 'tips'; st.fov = true; st.rot = false; afTarget = null; $('rays').value = 'tips'; $('fov').checked = true; $('rot').checked = false; syncInputs(); update(); setView('free'); });
+  $('reset').addEventListener('click', function () { st.un = 250; st.uf = 650; st.f = 40; st.D = 20; st.s = 50; st.focusD = 250; sLimits(); st.rays = 'tips'; st.fov = true; st.rot = false; afTarget = null; $('rays').value = 'tips'; $('fov').checked = true; $('rot').checked = false; syncInputs(); update(); setView('free'); });
   $('rays').addEventListener('change', function (e) { st.rays = e.target.value; update(); });
   $('fov').addEventListener('change', function (e) { st.fov = e.target.checked; update(); });
   $('rot').addEventListener('change', function (e) { st.rot = e.target.checked; update(); });
@@ -516,6 +525,7 @@ ol.how b { color: var(--fg); }
     if (afTarget !== null) {
       var d = afTarget - st.s;
       if (Math.abs(d) < 0.02) { st.s = afTarget; afTarget = null; } else { st.s += d * (1 - Math.exp(-dt / 0.12)); }
+      st.focusD = focusDFromS(st.s, st.f);
       $('s').value = st.s; update();
     }
     controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
